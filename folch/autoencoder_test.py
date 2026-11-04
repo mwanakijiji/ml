@@ -1,5 +1,8 @@
 import sys
 
+# let the machine find the packages
+sys.path.insert(0, "/home/ipa/quanz/user_accounts/espalding/dependencies")
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,9 +29,7 @@ training_epochs = 100
 
 device  = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# let the machine find the packages
-sys.path.insert(0, "/home/ipa/quanz/user_accounts/espalding/dependencies")
-# where is the data?
+# where is the input data?
 simulated_images_varied_OPD = Path("/home/ipa/quanz/user_accounts/espalding/fake_datasets/opd_only/")
 # where should the reconstruced images go?
 out_root = Path("/home/ipa/quanz/user_accounts/espalding/reconstructions")
