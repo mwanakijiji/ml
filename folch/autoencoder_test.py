@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import time
 
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
@@ -58,32 +59,6 @@ example_frame = dataset[0][0].numpy().squeeze()
 # loss: mean absolute error (OK for 2D image)
 loss = nn.L1Loss()
 
-# build untrained autoencoder whose input has one image channel
-# channel: number of values at each pixel (RGB would be 3)
-model = autoenc(1)
-
-# get first image from training set
-lol = train_loader.dataset[0][0]
-
-# pass image through autoencoder
-latent, denoised, layer_reps = model(lol)
-
-'''
-print(len(layer_reps))
-plt.imshow(layer_reps[4][0].detach().numpy())
-print(latent.shape, denoised.shape)
-'''
-
-'''
-fig, ax = plt.subplots(1, 2)
-ax[0].imshow(denoised.detach().numpy()[0, :, :])
-ax[1].imshow(latent.detach().numpy()[0, :, :])
-ax[0].set_title("reconstructed")
-ax[1].set_title("latent")
-'''
-
-loss_ = loss(lol, denoised)
-print(loss_.detach().numpy())
 
 
 loss_lr = np.zeros((3, 4*training_epochs))
@@ -91,6 +66,9 @@ models = []
 
 # for i, learning_rate in enumerate([learning_rates[2]]):
 for i, learning_rate in enumerate(learning_rates):
+
+    time_0 = time.time()
+
     print(f"learning rate: {learning_rate}")
     model = autoenc(1)
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-2)
@@ -118,6 +96,11 @@ for i, learning_rate in enumerate(learning_rates):
 
     loss_lr[i, :] = np.array(loss_per_epoch)
     models.append(model)
+
+    time_1 = time.time()
+
+    time_diff_train = time_1 - time_0
+    print(f'Elapsed time to train with learning rate {learning_rate:.0e}: {time_diff_train:.2f} seconds')
 '''
 fig, ax = plt.subplots(1, 3, sharex=True, sharey=True)
 fig.set_figheight(7)
@@ -140,6 +123,9 @@ out_root = Path("/Users/eckhartspalding/Documents/git.repos/ml/folch/reconstruct
 subset = test_loader.dataset
 
 for learning_rate, model in zip(learning_rates, models):
+
+    time_0 = time.time()
+
     model.eval()
     lr_dir = out_root / f"lr_{learning_rate:.0e}"
     lr_dir.mkdir(parents=True, exist_ok=True)
@@ -160,10 +146,15 @@ for learning_rate, model in zip(learning_rates, models):
 
     print(f"wrote {len(subset)} frame pairs to {lr_dir}")
 
+    time_1 = time.time()
+    time_diff_test = time_1 - time_0
+    print(f"Elapsed time to test with learning rate {learning_rate:.0e}: {time_diff_test:.2f} seconds")
+
 fig, ax = plt.subplots(len(subset), 3)
 fig.set_figheight(60)
 fig.set_figwidth(7.5)
 
+'''
 model = models[-1]
 model.eval()
 with torch.no_grad():
@@ -171,14 +162,14 @@ with torch.no_grad():
         test_img = test_data[0]
         latent, reconstructed, layer_reps = model(test_img)
 
-        '''
+
         ax[i, 0].imshow(reconstructed.detach().numpy()[0, :, :])
         ax[i, 1].imshow(test_img.detach().numpy()[0, :, :])
         ax[i, 2].imshow(latent.detach().numpy()[0, :, :])
         ax[i, 0].set_title("reconstructed")
         ax[i, 1].set_title("original")
         ax[i, 2].set_title("latent representation")
-        '''
+'''
 
 
 
