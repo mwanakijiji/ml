@@ -23,7 +23,7 @@ training_epochs = 100
 
 device  = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-simulated_images_varied_OPD = './opd_only/'
+simulated_images_varied_OPD = '/home/ipa/quanz/user_accounts/espalding/fake_datasets/opd_only/'
 
 data = Path(simulated_images_varied_OPD)
 
