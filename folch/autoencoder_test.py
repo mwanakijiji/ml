@@ -1,5 +1,4 @@
 import sys
-sys.path.insert(0, '/home/ipa/quanz/user_accounts/espalding/dependencies')
 
 import torch
 import torch.nn as nn
@@ -27,7 +26,16 @@ training_epochs = 100
 
 device  = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-simulated_images_varied_OPD = '/home/ipa/quanz/user_accounts/espalding/fake_datasets/opd_only/'
+# let the machine find the packages
+sys.path.insert(0, "/home/ipa/quanz/user_accounts/espalding/dependencies")
+# where is the data?
+simulated_images_varied_OPD = Path("/home/ipa/quanz/user_accounts/espalding/fake_datasets/opd_only/")
+# where should the reconstruced images go?
+out_root = Path("/home/ipa/quanz/user_accounts/espalding/reconstructions")
+
+for directory in (simulated_images_varied_OPD, out_root):
+    if not directory.is_dir():
+        directory.mkdir(parents=True)
 
 data = Path(simulated_images_varied_OPD)
 
@@ -119,7 +127,6 @@ ax[2].set_title("learning rate = 0.0001")
 ax[2].set_xlabel("epochs")
 '''
 
-out_root = Path("/Users/eckhartspalding/Documents/git.repos/ml/folch/reconstructions")
 subset = test_loader.dataset
 
 for learning_rate, model in zip(learning_rates, models):
@@ -128,7 +135,8 @@ for learning_rate, model in zip(learning_rates, models):
 
     model.eval()
     lr_dir = out_root / f"lr_{learning_rate:.0e}"
-    lr_dir.mkdir(parents=True, exist_ok=True)
+    if not lr_dir.is_dir():
+        lr_dir.mkdir(parents=True)
 
     with torch.no_grad():
         for i, test_data in enumerate(subset):
