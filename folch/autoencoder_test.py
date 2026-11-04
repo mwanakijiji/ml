@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '/home/ipa/quanz/user_accounts/espalding/dependencies')
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
